@@ -23,18 +23,8 @@ class VkDownloader:
                     f.write(photo.content)
                 res_dic.update({'file_name': f"{photos.get('filename')}.jpg"})
                 res_dic.update({'size': f"{size}"})
-                t = open(f"./download/{photos.get('filename')}.json", 'w')
-                t.close()
-                with open(f"./download/{photos.get('filename')}.json", 'r+') as r:
-                    try:
-                        data = json.loads(r)
-                    except:
-                        data = []
-                        json.dump(data, r)
-                data.append(res_dic)
-                with open(f"./download/{photos.get('filename')}.json", 'w') as r:
-                    json.dump(data, r)
-                break
+                return res_dic
+
 
     def download(self, vk_id: str):
         """Метод скачивает фотографии с профиля vk_id"""
@@ -43,6 +33,7 @@ class VkDownloader:
         s = requests.get(f"https://api.vk.com/method/photos.get?{params}&v=5.21&access_token={self.token}")
         items_return = s.json()['response']['items']
         m = 1
+        log_list = []
         for item in items_return:
             filename = item['likes']['count']
             photo_items = {}
@@ -51,9 +42,12 @@ class VkDownloader:
                 photo_items.update({size['type'] : size['src']})
 
             print(f"Нашли фото {m}")
-            self.save_photo(photo_items)
+            log_dict = self.save_photo(photo_items)
+            log_list.append(log_dict)
             print(f"Скачали фото {m}")
             m += 1
+        with open('./download/res.json', 'w', encoding='utf-8') as f:
+            json.dump(log_list, f)
 
 
 
